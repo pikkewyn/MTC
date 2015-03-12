@@ -1,5 +1,18 @@
-# CXX
-CXX= clang++
+PROG= mtc
+
+CXX =
+
+CLANG_CHECK = $(shell which clang++ >/dev/null; echo $$?)
+ifeq "$(CLANG_CHECK)" "0"
+CXX = clang++
+CXXFLAGS = -Weverything -Wno-documentation-unknown-command -Wno-padded
+else
+GCC_CHECK = $(shell which g++ >/dev/null; echo $$?)
+ifeq "$(GCC_CHECK)" "0"
+CXX = g++
+CXXFLAGS = -Wall --pedantic --std=gnu99
+endif
+endif
 
 INC= -I. -I./loki/include
 
@@ -26,63 +39,15 @@ LEXER_DEFINITION_FILE = ./scanner.l
 LEXER_SOURCE_CODE_FILE = ./scanner.cpp
 FLEXFLAG = -I
 
-OBJS= main.o \
-	application.o \
-	assignment_expression.o \
-	bison_parser.o \
-	code_generating_visitor.o \
-	code_generator.o \
-	compound_instruction.o \
-	declaration.o \
-	dereference.o \
-	do_while_instruction.o \
-	equal_types_multimethod.o \
-	equal_types_nothrowable_dispatcher.o \
-	errors_detector.o \
-	expression.o \
-	factor.o \
-	for_instruction.o \
-	function_call.o \
-	function.o \
-	function_data.o \
-	get_address.o \
-	if_instruction.o \
-	keywords_table.o \
-	label_generator.o \
-	number.o \
-	operators.o \
-	parameter.o \
-	parser.o \
-	parenthesis.o \
-	program.o \
-	return_instruction.o \
-	scanner.o \
-	scope.o \
-	semantic_analysis_exceptions.o \
-	semantic_analysis_visitor.o \
-	simple_expression.o \
-	string.o \
-	string_data.o \
-	strings_controller.o \
-	symbol_data.o \
-	symbols_controller_factory.o \
-	type.o \
-	type_data.o \
-	types_mapping.o \
-	unary_factor.o \
-	variable.o \
-	variable_data.o \
-	variables_controller.o \
-	while_instruction.o
-
-PROG= mtc
+SRC = $(wildcard *.cpp)
+OBJS = $(SRC:.cpp=.o)
 
 DEP= makefile.dep
 
-%.o: %.cpp
+%.o: %.cpp | requirements
 	$(CXX) $(CXXFLAG) -c $<
 
-$(PROG):$(OBJS) 
+$(PROG): $(OBJS)
 	$(CXX) $(OBJS) $(LIBS) $(LIBS_DIR) -o $@
 
 all: ccomp $(PROG)
@@ -93,8 +58,8 @@ ccomp: $(PARSER_DEFINITION_FILE) $(LEXER_DEFINITION_FILE)
 
 ph: $(PH_FILE)
 	$(CXX) $(PHFLAG) $(PH_FILE)
-	
-depend: 
+
+depend:
 	$(CXX) -I. -MM $(OBJS:.o=.cpp) > $(DEP)
 
 clean:
@@ -111,11 +76,17 @@ clean_tests:
 	rm -f ./tests/*.s
 	rm -f ./tests/*.o
 	rm -f ./tests/*.exe
-		
+
 check_syntax_only: $(OBJS)
 	$(CXX) $(CXXFLAG) -S $<
 
 ifeq ($(wildcard $(DEP)), $(DEP))
 include $(DEP)
+endif
+
+#.PHONY: requirements
+requirements:
+ifndef CXX
+	$(error Missing compilator. Please install g++ or clang++)
 endif
 
