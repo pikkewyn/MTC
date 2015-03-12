@@ -19,9 +19,9 @@ INC= -I. -I./loki/include
 LIBS= -lloki
 LIBS_DIR= -L./loki/lib
 
-CXXFLAG_DEBUG= -pg -g $(INC)
-CXXFLAG_RELEASE= -O2 -DNDEBUG $(INC)
-CXXFLAG = $(CXXFLAG_DEBUG)
+CXXFLAGS_DEBUG= -pg -g $(INC)
+CXXFLAGS_RELEASE= -O2 -DNDEBUG $(INC)
+CXXFLAGS += $(CXXFLAGS_DEBUG)
 
 PH_FILE= ./headers/ph.hpp
 PHFLAG = -c -o ./headers/ph.gch -x c++
@@ -45,7 +45,7 @@ OBJS = $(SRC:.cpp=.o)
 DEP= makefile.dep
 
 %.o: %.cpp | requirements
-	$(CXX) $(CXXFLAG) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 $(PROG): $(OBJS)
 	$(CXX) $(OBJS) $(LIBS) $(LIBS_DIR) -o $@
@@ -78,7 +78,7 @@ clean_tests:
 	rm -f ./tests/*.exe
 
 check_syntax_only: $(OBJS)
-	$(CXX) $(CXXFLAG) -S $<
+	$(CXX) $(CXXFLAGS) -S $<
 
 ifeq ($(wildcard $(DEP)), $(DEP))
 include $(DEP)
